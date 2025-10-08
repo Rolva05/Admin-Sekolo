@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; background: url('sekolo..png') no-repeat center center fixed; background-size: cover; min-height: 100vh; padding: 30px;}
+.report-container { background: white; padding: 20px; border-radius: 10px; max-width: 800px; margin: 0 auto; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+h1,h2 { text-align:center; color:#1e3a8a; }
+table { width:100%; border-collapse:collapse; margin-top:20px; }
+th, td { border:1px solid #ddd; padding:10px; text-align:center; }
+th { background-color:#1e3a8a; color:white; }
+.pass { color:green; font-weight:bold; }
+.fail { color:red; font-weight:bold; }
+.final-pass { background-color:#d1fae5; color:green; font-weight:bold; }
+.final-fail { background-color:#fee2e2; color:red; font-weight:bold; }
+.buttons { display:flex; justify-content:space-between; margin-top:25px; }
+button { background:#1e3a8a; color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; transition:0.2s; }
+button:hover { background:#3b82f6; }
+.id-section { display:flex; justify-content:space-around; margin-top:40px; flex-wrap:wrap; gap:20px; }
+.id-card { width:300px; border:2px solid #1e3a8a; border-radius:10px; text-align:center; padding:15px; background:#f8fafc; box-shadow:0 2px 5px rgba(0,0,0,0.15);}
+.id-card h3 { margin:5px 0; color:#1e3a8a; }
+.id-card p { margin:3px 0; font-size:14px; }
+</style>
+</head>
+<body>
+
+<div class="report-container" id="reportContent">
+  <h1 id="schoolName">Sekolo Primary School</h1>
+  <h2 id="studentName">Student Report</h2>
+  <h3 id="gradeStatus"></h3>
+
+  <table id="reportTable">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Assignment</th>
+        <th>Practical</th>
+        <th>Exam</th>
+        <th>Average</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="id-section">
+    <div class="id-card">
+      <h3 id="studentCardName">Student Name</h3>
+      <p><strong>ID:</strong> <span id="studentID">STU001</span></p>
+      <p><strong>Grade:</strong> <span id="studentGrade">--</span></p>
+      <p><strong>Contact:</strong> 072-555-1234</p>
+    </div>
+
+    <div class="id-card">
+      <h3 id="parentCardName">Parent Name</h3>
+      <p><strong>ID:</strong> <span id="parentID">PAR001</span></p>
+      <p><strong>Contact:</strong> 082-555-5678</p>
+      <p><strong>Relation:</strong> Mother</p>
+    </div>
+  </div>
+</div>
+
+<div class="buttons">
+  <button onclick="goBack()">← Back</button>
+  <button onclick="downloadReport()">Download Report (PDF)</button>
+</div>
+
+<script>
+const studentName = localStorage.getItem('selectedStudent');
+const studentsData = JSON.parse(localStorage.getItem('studentsData')) || {};
+const reportBody = document.querySelector('#reportTable tbody');
+
+if(studentName && studentsData[studentName]){
+  const subjects = studentsData[studentName];
+  document.getElementById('studentName').textContent = `${studentName}'s Report`;
+  document.getElementById('studentCardName').textContent = studentName;
+
+  let failCount = 0;
+  subjects.forEach(s=>{
+    if(s.status==='Fail') failCount++;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${s.subject}</td>
+      <td>${s.assignment}</td>
+      <td>${s.practical}</td>
+      <td>${s.exam}</td>
+      <td>${s.total.toFixed(2)}</td>
+      <td class="${s.statusClass}">${s.status}</td>
+    `;
+    reportBody.appendChild(row);
+  });
+
+  // Final Result
+  const finalStatus = failCount >=2 ? 'Not Promoted' : 'Promoted';
+  const finalClass = failCount>=2 ? 'final-fail' : 'final-pass';
+  const finalRow = document.createElement('tr');
+  finalRow.innerHTML = `<td colspan="5" style="text-align:right; font-weight:bold;">Final Result</td>
+                        <td class="${finalClass}">${finalStatus}</td>`;
+  reportBody.appendChild(finalRow);
+
+  document.getElementById('gradeStatus').textContent = `Grade Status: ${finalStatus}`;
+  document.getElementById('studentGrade').textContent = finalStatus;
+}
+
+function goBack(){ window.location.href='Result.html'; }
+function downloadReport(){
+  const element = document.getElementById('reportContent');
+  html2pdf().set({
+    margin:0.5,
+    filename: studentName+'_Report.pdf',
+    image:{type:'jpeg', quality:0.98},
+    html2canvas:{scale:2},
+    jsPDF:{unit:'in', format:'a4', orientation:'portrait'}
+  }).from(element).save();
+}
+</script>
+
+</body>
+</html>
