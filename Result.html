@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Marks Management</title>
+<style>
+body { 
+  font-family: Arial, sans-serif; 
+  background: url('sekolo..png') no-repeat center center fixed; 
+  background-size: cover; 
+  min-height: 100vh; 
+  margin:0; padding:20px;
+}
+h1 { text-align:center; color:#1e3a8a;}
+.container { max-width:900px; margin:0 auto; background: rgba(255,255,255,0.9); padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+form { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:20px;}
+input, select, button { padding:10px; border:1px solid #ccc; border-radius:6px; font-size:1rem;}
+button { background:#1e3a8a; color:white; cursor:pointer; transition:0.2s;}
+button:hover { background:#3b82f6;}
+.student-section { border:2px solid #ccc; border-radius:10px; padding:15px; margin-bottom:30px;}
+.student-section h2 { margin-top:0; color:#1e3a8a; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+table { width:100%; border-collapse:collapse; margin-top:10px;}
+th, td { border:1px solid #ddd; padding:8px; text-align:center;}
+th { background-color:#1e3a8a; color:white;}
+.pass { color:green; font-weight:bold;}
+.fail { color:red; font-weight:bold;}
+.final-pass { background-color:#d1fae5; color:green; font-weight:bold;}
+.final-fail { background-color:#fee2e2; color:red; font-weight:bold;}
+.back-btn { position:fixed; bottom:20px; left:20px; background-color:#1e3a8a; color:white; padding:10px 16px; border-radius:50%; text-decoration:none; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.2); transition:background-color 0.3s, transform 0.2s;}
+.back-btn:hover { background-color:#3b82f6; transform:scale(1.1);}
+.remove-btn, .update-btn { color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.9rem; margin-left:5px;}
+.remove-btn { background-color:#dc2626;}
+.remove-btn:hover { background-color:#ef4444;}
+.update-btn { background-color:#f59e0b;}
+.update-btn:hover { background-color:#fbbf24;}
+.subject-selector { margin:10px 0; padding:8px; font-size:1rem; border-radius:6px; border:1px solid #ccc;}
+</style>
+</head>
+<body>
+<h1>Student Marks Management System</h1>
+<div class="container">
+<form id="marksForm">
+  <input type="text" id="studentName" placeholder="Student Name" required>
+  <select id="subject">
+    <option value="">-- Select Subject --</option>
+    <option>Mathematics</option>
+    <option>English</option>
+    <option>Life Skills</option>
+    <option>Natural Science</option>
+    <option>Social Studies</option>
+    <option>Creative Arts</option>
+    <option>Technology</option>
+    <option>Afrikaans</option>
+    <option>IsiZulu</option>
+    <option>Sepedi</option>
+    <option>Computer Skills</option>
+    <option value="Other">Other (Type Below)</option>
+  </select>
+  <input type="text" id="customSubject" placeholder="Enter Custom Subject (optional)">
+  <input type="number" id="assignment" placeholder="Assignment (0–100)" required>
+  <input type="number" id="practical" placeholder="Practical (0–100)" required>
+  <input type="number" id="exam" placeholder="Exam (0–100)" required>
+  <button type="button" id="addSubjectBtn">Add/Update Subject</button>
+  <button type="submit">Done</button>
+</form>
+
+<div id="subjectSelectContainer"></div>
+<div id="studentsResults"></div>
+</div>
+
+<!-- Back button to Admin-login.html -->
+ <div class="buttons">
+  <button onclick="goBack()">← Back</button>
+</div>
+
+<script>
+function goBack() {
+  window.location.href = 'Admim-login.html';
+}
+
+const form = document.getElementById('marksForm');
+const studentsResults = document.getElementById('studentsResults');
+const subjectSelectContainer = document.getElementById('subjectSelectContainer');
+let studentsData = JSON.parse(localStorage.getItem('studentsData')) || {};
+let tempSubjects = [];
+let editingIndex = null;
+
+
+
+// Add / Update Subject
+document.getElementById('addSubjectBtn').addEventListener('click', () => {
+  const name = document.getElementById('studentName').value.trim();
+  let subject = document.getElementById('subject').value.trim();
+  const customSubject = document.getElementById('customSubject').value.trim();
+  if(subject==="Other" && customSubject) subject = customSubject;
+
+  const assignment = parseFloat(document.getElementById('assignment').value);
+  const practical = parseFloat(document.getElementById('practical').value);
+  const exam = parseFloat(document.getElementById('exam').value);
+
+  if(!name || !subject || isNaN(assignment) || isNaN(practical) || isNaN(exam)) {
+    alert("Please fill all fields correctly");
+    return;
+  }
+
+  const total = (assignment+practical+exam)/3;
+  const status = total>=30?'Pass':'Fail';
+  const statusClass = total>=30?'pass':'fail';
+
+  const subjectData = {subject, assignment, practical, exam, total, status, statusClass};
+
+  if(editingIndex!==null){
+    tempSubjects[editingIndex] = subjectData;
+    editingIndex=null;
+  } else {
+    tempSubjects.push(subjectData);
+  }
+
+  alert(`Subject "${subject}" added/updated for ${name}`);
+  form.reset();
+  document.getElementById('studentName').value = name;
+});
+
+// Done - Save Student
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = document.getElementById('studentName').value.trim();
+  if(tempSubjects.length===0){ alert("Please add at least one subject."); return; }
+  studentsData[name] = [...tempSubjects];
+  tempSubjects = [];
+  editingIndex = null;
+  localStorage.setItem('studentsData', JSON.stringify(studentsData));
+  displayResults();
+  form.reset();
+  subjectSelectContainer.innerHTML='';
+});
+
+// Display all students
+function displayResults(){
+  studentsResults.innerHTML='';
+  for(const [studentName, subjects] of Object.entries(studentsData)){
+    const section = document.createElement('div');
+    section.className='student-section';
+    let html=`<h2>${studentName}<div>
+      <button onclick="viewReport('${studentName}')">View Report</button>
+      <button class="remove-btn" onclick="removeStudent('${studentName}')">Remove Student</button>
+      <button class="update-btn" onclick="chooseSubject('${studentName}')">Update Results</button>
+      </div></h2>
+      <table><thead><tr>
+      <th>Subject</th><th>Assignment</th><th>Practical</th><th>Exam</th><th>Average</th><th>Status</th>
+      </tr></thead><tbody>`;
+
+    let failCount=0;
+    subjects.forEach(s=>{ if(s.status==='Fail') failCount++; 
+      html+=`<tr><td>${s.subject}</td><td>${s.assignment}</td><td>${s.practical}</td><td>${s.exam}</td><td>${s.total.toFixed(2)}</td><td class="${s.statusClass}">${s.status}</td></tr>`;
+    });
+
+    let finalStatus=failCount>=2?'Not Promoted':'Promoted';
+    let finalClass=failCount>=2?'final-fail':'final-pass';
+    html+=`<tr><td colspan="5" style="text-align:right;font-weight:bold;">Final Result</td><td class="${finalClass}">${finalStatus}</td></tr>`;
+    html+=`</tbody></table>`;
+    section.innerHTML=html;
+    studentsResults.appendChild(section);
+  }
+}
+
+// Choose student subject to update
+function chooseSubject(studentName){
+  if(!studentsData[studentName]) return;
+  tempSubjects = [...studentsData[studentName]];
+  document.getElementById('studentName').value = studentName;
+  
+  let selectHtml = `<select id="subjectToEdit" class="subject-selector"><option value="">--Select Subject to Update--</option>`;
+  tempSubjects.forEach((s,i)=>{ selectHtml+=`<option value="${i}">${s.subject}</option>`; });
+  selectHtml+=`</select>`;
+  subjectSelectContainer.innerHTML = selectHtml;
+
+  document.getElementById('subjectToEdit').addEventListener('change', function(){
+    const idx=parseInt(this.value);
+    if(isNaN(idx)) return;
+    editingIndex=idx;
+    const s=tempSubjects[idx];
+    document.getElementById('subject').value=s.subject;
+    document.getElementById('assignment').value=s.assignment;
+    document.getElementById('practical').value=s.practical;
+    document.getElementById('exam').value=s.exam;
+  });
+}
+
+function removeStudent(studentName){
+  if(confirm(`Remove ${studentName}?`)){
+    delete studentsData[studentName];
+    localStorage.setItem('studentsData', JSON.stringify(studentsData));
+    displayResults();
+    subjectSelectContainer.innerHTML='';
+  }
+}
+
+function viewReport(studentName){
+  localStorage.setItem('selectedStudent', studentName);
+  window.location.href='report.html';
+}
+
+displayResults();
+</script>
+</body>
+</html>
