@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Apply - Sekolo Primary</title>
+  <style>
+    body {  
+       background: url('sekolo..png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      margin: 0; 
+      padding: 0; }
+
+    nav { background-color: #004d40; 
+      padding: 1rem; 
+    }
+    nav ul { list-style: none; 
+      display: flex; 
+      gap: 1rem; 
+      margin: 0; 
+      padding: 0; 
+    }
+
+    nav ul li a { color: white; 
+      text-decoration: none; 
+      font-weight: bold; 
+    }
+
+    main { padding: 2rem; 
+      background:transparent; 
+      max-width: 800px; 
+      margin: 2rem auto; 
+      border-radius: 8px; 
+    }
+
+    form input, form select, form button {
+      width: 100%; 
+      padding: 0.75rem; 
+      margin: 0.5rem 0; 
+      border-radius: 5px; 
+      border: 1px solid #ccc;
+    }
+    form button { background-color: #00796b; 
+      color: white; 
+      border: none; 
+      cursor: pointer; }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="apply.html">Apply</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Apply for Admission</h1>
+    <form id="applicationForm">
+      <label for="name">Student Name:</label>
+      <input type="text" name="name" placeholder="Student Name" required>
+      <label for="dob">Date of Birth:</label>
+      <input type="date" name="dob" required>
+      <label for="Age">Student Age:</label>
+      <input type="number" name="age" placeholder="Student Age" required min="1" max="100">
+      <label for="grade">Grades:</label>
+      <select name="grade" required>
+        <option value="">Select Grade</option>
+        <option value="Grade 1">Grade 1</option>
+        <option value="Grade 2">Grade 2</option>
+        <option value="Grade 3">Grade 3</option>
+        <option value="Grade 4">Grade 4</option>
+        <option value="Grade 5">Grade 5</option>
+        <option value="Grade 6">Grade 6</option>
+        <option value="Grade 7">Grade 7</option>
+      </select>
+      <label for="Parent/Guardian Name">Parent/Guardian Name:</label>
+      <input type="text" name="parent_name" placeholder="Parent/Guardian Name" required>
+      <label for="email">Parent/Guardian Email:</label>
+      <input type="email" name="email" placeholder="Parent Email" required>
+      <label for="phone">Parent/Guardian Number:</label>
+      <input type="tel" name="phone" placeholder="Parent Phone" required>
+      <label for="student_id">Upload Student ID Card:</label>      
+      <input type="file" id="student_id" name="student_id" accept=".jpg,.png,.pdf" required>        
+      <label for="parent_id">Upload Parent/Guardian ID Card:</label> 
+      <input type="file" id="parent_id" name="parent_id" accept=".jpg,.png,.pdf" required>
+      <button type="submit">Submit Application</button>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('applicationForm');
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const applicant = {
+        name: form.name.value,
+        dob: form.dob.value,
+        age: form.age.value,
+        grade: form.grade.value,
+        parent_name: form.parent_name.value,
+        email: form.email.value,
+        phone: form.phone.value
+      };
+
+      let applicants = JSON.parse(localStorage.getItem('applicants')) || [];
+      applicants.push(applicant);
+      localStorage.setItem('applicants', JSON.stringify(applicants));
+
+      alert('Application submitted!');
+      form.reset();
+    });
+  </script>
+</body>
+</html>
