@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Registered Applicants</title>
+  <style>
+    body {
+      background: url('sekolo..png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    nav {
+      background-color: #004d40;
+      padding: 1rem;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    main {
+      padding: 2rem;
+      background: rgba(255,255,255,0.95);
+      max-width: 900px;
+      margin: 2rem auto;
+      border-radius: 8px;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    .stats {
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    button.remove-btn {
+      background-color: #d32f2f;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button.remove-btn:hover {
+      background-color: #b71c1c;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Registered Applicants</h1>
+    <p class="stats" id="totalApplicants">Total Registered: 0</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>DOB</th>
+          <th>Age</th>
+          <th>Grade</th>
+          <th>Parent Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="applicantList">
+        <!-- Applicants injected here -->
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    const applicantList = document.getElementById('applicantList');
+    const totalApplicants = document.getElementById('totalApplicants');
+
+    let applicants = JSON.parse(localStorage.getItem('applicants')) || [];
+
+    function renderApplicants() {
+      applicantList.innerHTML = '';
+      totalApplicants.textContent = `Total Registered: ${applicants.length}`;
+
+      applicants.forEach((applicant, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${applicant.name}</td>
+          <td>${applicant.dob}</td>
+          <td>${applicant.age}</td>
+          <td>${applicant.grade}</td>
+          <td>${applicant.parent_name}</td>
+          <td>${applicant.email}</td>
+          <td>${applicant.phone}</td>
+          <td><button class="remove-btn" onclick="removeApplicant(${index})">Remove</button></td>
+        `;
+        applicantList.appendChild(row);
+      });
+    }
+
+    function removeApplicant(index) {
+      if (confirm("Are you sure you want to remove this applicant?")) {
+        applicants.splice(index, 1);
+        localStorage.setItem('applicants', JSON.stringify(applicants));
+        renderApplicants();
+      }
+    }
+
+    // Initial render
+    renderApplicants();
+  </script>
+</body>
+</html>
